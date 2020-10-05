@@ -30,6 +30,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     print('Sent ', repr(l))
                     l = f.read(1024)
             print('Se ha finalizado el envio de datos')
-            conn.send('¡Gracias por conectarte a nuestro servidor!\n Ten un gran dia.\n Que no te de coronavirus.\n Con amor,\n Servidor Don Jose Stalin')
+            conn.send(b'Gracias por conectarte a nuestro servidor.\n Ten un gran dia.\n Que no te de coronavirus.\n Con amor,\n Servidor Don Jose Stalin')
 
 
