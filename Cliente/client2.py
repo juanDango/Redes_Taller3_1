@@ -8,7 +8,7 @@ import os
 from hmac import compare_digest
 import sys
 
-TCP_IP = '172.31.31.23'
+TCP_IP = '54.91.103.85'
 TCP_PORT = 60001
 BUFFER_SIZE = 1024
 BEG_RECV = b'BEG_RECV'
