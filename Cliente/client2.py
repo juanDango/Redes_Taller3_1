@@ -105,7 +105,7 @@ print('La integridad del archivo pudo ser verificada correctamente.')
 print('Comando enviado: ', repr(OK))
 
 fin = receiveOneMessage(s)
-if(repr(fin) != FIN):
+if(repr(fin) != repr(FIN)):
     print('Protocolo no exitoso. Cerrando conexion.')    
     s.close()
     exit()
