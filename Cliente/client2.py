@@ -103,15 +103,17 @@ print('Comenzando transferencia de datos...')
 with open(files[archivoElegido], 'wb') as f:
     while True:
         data = receiveOneMessage(s)
-        print('data = ' + repr(data) + '\n\n')
+        #print('data = ' + repr(data) + '\n\n')
         if repr(data) == repr(END_TRANSMISSION):
-            fechaFinTransmision = datetime.datetime.now()
+            fechaFinTransmision = str(datetime.datetime.now())
+            sendOneMessage(s, fechaFinTransmision.encode())
             print('Fecha fin transmision archivo: ', fechaFinTransmision)
             f.close()
             print('Comando recibido: ', repr(END_TRANSMISSION))
-            print('Archivo cerrado')
+            print('Se ha terminado de escribir el archivo ' + files[archivoElegido])
             break
         f.write(data)
+
 
 
 """

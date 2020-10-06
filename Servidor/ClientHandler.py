@@ -76,21 +76,27 @@ class ClientHandler(Thread):
             self.sendOneMessage(ERR)
             return
         f = open(path + files[archivoElegido], 'rb')
+
+        fechaInicioTransmision = 0
         while True:
             fechaInicioTransmision = datetime.datetime.now()
             print('Fecha inicio transmision archivo: ', fechaInicioTransmision)
             l = f.read(BUFFER_SIZE)
             while (l):
                 self.sendOneMessage(l)
-                print('Se ha enviado: ', repr(l))
+                #print('Se ha enviado: ', repr(l))
                 l = f.read(BUFFER_SIZE)
             if not l:
                 f.close()
-                self.sock.send(EMPTY)
                 print('Se ha completado la transferencia del archivo')       
                 break
         print('Enviando comando: ', repr(END_TRANSMISSION))
         self.sendOneMessage(END_TRANSMISSION)
+        fechaFinTransmision = self.receiveOneMessage()
+        duracionTransmision = datetime.datetime.strptime(fechaFinTransmision.decode(), '%Y-%m-%d %H:%M:%S.%f') - fechaInicioTransmision
+        print("La duracion total de la transmision fue de: %f s" %(duracionTransmision.total_seconds())) 
+
+
 
 
 
