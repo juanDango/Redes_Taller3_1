@@ -2,6 +2,7 @@
 
 import socket
 import struct
+import datetime
 
 TCP_IP = 'localhost'
 TCP_PORT = 9001
@@ -11,6 +12,7 @@ OK = b'OK'
 FILE_OPTS = b'FILE_OPTS'
 FILENAMES_SENT = b'FILENAMES_SENT'
 ERR = b'ERR'
+END_TRANSMISSION = b'END_TRANSMISSION'
 
 def sendOneMessage(socket, data):
     length = len(data)
@@ -69,15 +71,19 @@ print('Comando recibido: ', repr(mensajeOpcionesArchivos))
 print('Los archivos disponibles en el servidor son: ')
 mensajeNombreArchivo = receiveOneMessage(s)
 numArchivo = 1
+files = []
 while (mensajeNombreArchivo != FILENAMES_SENT):
-    print(str(numArchivo) + '. ' + repr(mensajeNombreArchivo))  
+    ruta = repr(mensajeNombreArchivo)
+    archivo = ruta[ruta.find("'")+1:-1]
+    files.append(archivo)
+    print(str(numArchivo) + '. ' + archivo)  
     mensajeNombreArchivo = receiveOneMessage(s)
     numArchivo+=1
 print('Comando recibido: ', repr(mensajeNombreArchivo))
 #Se resta 1 porque vamos a la posicion del arreglo en que se encuentra el archivo en el servidor
 try:
-    archivoElegido = str(int(input('Escoja el numero de archivo a recibir: \n')) - 1)
-    sendOneMessage(s, archivoElegido.encode())
+    archivoElegido = int(input('Escoja el numero de archivo a recibir: \n')) - 1
+    sendOneMessage(s, str(archivoElegido).encode())
 except:
     print('Opcion incorrecta. Cerrando comunicacion con el servidor.')
     s.close()
@@ -93,6 +99,20 @@ if(repr(confirmacionArchivoElegido) != repr(OK)):
 print('Comando recibido: ', repr(confirmacionArchivoElegido))
 print('El servidor ha verificado el nombre del archivo.')
 print('Comenzando transferencia de datos...')
+
+with open(files[archivoElegido], 'wb') as f:
+    while True:
+        data = receiveOneMessage(s)
+        print('data = ' + repr(data) + '\n\n')
+        if repr(data) == repr(END_TRANSMISSION):
+            fechaFinTransmision = datetime.datetime.now()
+            print('Fecha fin transmision archivo: ', fechaFinTransmision)
+            f.close()
+            print('Comando recibido: ', repr(END_TRANSMISSION))
+            print('Archivo cerrado')
+            break
+        f.write(data)
+
 
 """
 with open('recibido.txt', 'wb') as f:

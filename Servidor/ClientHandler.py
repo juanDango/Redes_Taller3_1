@@ -2,6 +2,8 @@ import socket
 from threading import Thread
 from socketserver import ThreadingMixIn
 import struct
+import datetime
+import os
 
 BUFFER_SIZE = 1024
 BEG_RECV = b'BEG_RECV'
@@ -9,8 +11,11 @@ OK = b'OK'
 FILE_OPTS = b'FILE_OPTS'
 FILENAMES_SENT = b'FILENAMES_SENT'
 ERR = b'ERR'
-
-files = ['./files/prueba1.txt', './files/prueba2.txt']
+END_TRANSMISSION = b'END_TRANSMISSION'
+EMPTY = b''
+path = './files/'
+files = os.listdir(path)
+files.remove('.DS_Store')
 
 class ClientHandler(Thread):
     def __init__(self, ip, port, sock):
@@ -64,11 +69,31 @@ class ClientHandler(Thread):
         try:
             archivoElegido = int(repr(self.receiveOneMessage())[2:-1])
             print('Se ha elegido el archivo: ' + repr(files[archivoElegido]))
+            print('Iniciando transmision...')
             self.sendOneMessage(OK)
         except:
             print('Archivo no disponible. Cerrando la conexion con: ', (self.ip, self.port))
             self.sendOneMessage(ERR)
             return
+        f = open(path + files[archivoElegido], 'rb')
+        while True:
+            fechaInicioTransmision = datetime.datetime.now()
+            print('Fecha inicio transmision archivo: ', fechaInicioTransmision)
+            l = f.read(BUFFER_SIZE)
+            while (l):
+                self.sendOneMessage(l)
+                print('Se ha enviado: ', repr(l))
+                l = f.read(BUFFER_SIZE)
+            if not l:
+                f.close()
+                self.sock.send(EMPTY)
+                print('Se ha completado la transferencia del archivo')       
+                break
+        print('Enviando comando: ', repr(END_TRANSMISSION))
+        self.sendOneMessage(END_TRANSMISSION)
+
+
+
 
 
 
