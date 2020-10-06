@@ -78,7 +78,7 @@ with open(archivoElegido, 'wb') as f:
             print('Comando recibido: ', repr(END_TRANSMISSION))
             print('Se ha terminado de escribir el archivo ' + archivoElegido)
             break
-        print('data = ' + repr(data) + '\n\n')
+        #print('data = ' + repr(data) + '\n\n')
         f.write(data)
         digestGenerado.update(data)
         print(data)
