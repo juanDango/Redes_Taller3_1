@@ -5,6 +5,7 @@ import struct
 import datetime
 import os
 import hashlib
+import sys
 
 BUFFER_SIZE = 1024
 BEG_RECV = b'BEG_RECV'
@@ -58,6 +59,7 @@ class ClientHandler(Thread):
         fechaInicioTransmision = 0
         digest = hashlib.md5()
         numPaquetesEnviados = 0
+        bytesEnviados = 0
         while True:
             fechaInicioTransmision = datetime.datetime.now()
             print('Fecha inicio transmision archivo: ', fechaInicioTransmision)
@@ -66,6 +68,7 @@ class ClientHandler(Thread):
                 self.sendOneMessage(l)
                 print('Se ha enviado: ', repr(l))
                 digest.update(l)
+                bytesEnviados += sys.getsizeof(l)
                 l = f.read(BUFFER_SIZE)
                 numPaquetesEnviados +=1
             if not l:
@@ -82,6 +85,12 @@ class ClientHandler(Thread):
         print(digestE)
         self.sendOneMessage(digestE)
         entregaExitosa = self.receiveOneMessage()
+        numPaquetesRecibidos = repr(self.receiveOneMessage())[2:-1]
+        bytesRecibidos = repr(self.receiveOneMessage())[2:-1]
         print('Comando recibido: ', repr(entregaExitosa))
-        #Format: ip:puerto;entregaExitosa;duracion_transmision;numPaquetes
-        self.log.write(self.ip + ':' + str(self.port) + ';' + repr(entregaExitosa)[2:-1] + ';' + str(duracionTransmision.total_seconds()) + ';' +  str(numPaquetesEnviados)+ ';' + '\n')
+        print('El cliente ' + self.ip + ':' + str(self.port) + ' recibio ' + numPaquetesRecibidos + ' paquetes')
+        print('Numero de bytes enviados: ', bytesEnviados)
+        print('El cliente ' + self.ip + ':' + str(self.port) + ' recibio ' + bytesRecibidos + ' bytes')
+        #Format: ip:puerto;entregaExitosa;duracion_transmision;numPaquetesEnviados;numPaquetesRecibidos;totalBytesEnviados;totalBytesRecibidos;
+        self.log.write(self.ip + ':' + str(self.port) + ';' + repr(entregaExitosa)[2:-1] + ';' + str(duracionTransmision.total_seconds()) + ';' +  
+        str(numPaquetesEnviados)+ ';' + numPaquetesRecibidos +  ';' + str(bytesEnviados) + ';' + bytesRecibidos +  ';\n')
