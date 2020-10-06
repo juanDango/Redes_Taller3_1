@@ -3,14 +3,15 @@
 import socket
 import struct
 import datetime
+import hashlib
+import os
+from hmac import compare_digest
 
 TCP_IP = 'localhost'
 TCP_PORT = 9001
 BUFFER_SIZE = 1024
 BEG_RECV = b'BEG_RECV'
 OK = b'OK'
-FILE_OPTS = b'FILE_OPTS'
-FILENAMES_SENT = b'FILENAMES_SENT'
 ERR = b'ERR'
 END_TRANSMISSION = b'END_TRANSMISSION'
 
@@ -58,78 +59,36 @@ if(repr(mensajeConfirmacion) != repr(OK)):
     exit()  
 print('Comando recibido: ', repr(mensajeConfirmacion))
 
-mensajeOpcionesArchivos = receiveOneMessage(s)
-if(repr(mensajeOpcionesArchivos) != repr(FILE_OPTS)):
-    print(repr(mensajeOpcionesArchivos))
-    print('No se ha recibido el mensaje %s esperado, finalizando conexion' %(repr(FILE_OPTS)))
-    err = receiveOneMessage(s)
-    print('Comando recibido: ', repr(err))
-    s.close()
-    exit()  
-print('Comando recibido: ', repr(mensajeOpcionesArchivos))
-
-print('Los archivos disponibles en el servidor son: ')
-mensajeNombreArchivo = receiveOneMessage(s)
-numArchivo = 1
-files = []
-while (mensajeNombreArchivo != FILENAMES_SENT):
-    ruta = repr(mensajeNombreArchivo)
-    archivo = ruta[ruta.find("'")+1:-1]
-    files.append(archivo)
-    print(str(numArchivo) + '. ' + archivo)  
-    mensajeNombreArchivo = receiveOneMessage(s)
-    numArchivo+=1
-print('Comando recibido: ', repr(mensajeNombreArchivo))
-#Se resta 1 porque vamos a la posicion del arreglo en que se encuentra el archivo en el servidor
-try:
-    archivoElegido = int(input('Escoja el numero de archivo a recibir: \n')) - 1
-    sendOneMessage(s, str(archivoElegido).encode())
-except:
-    print('Opcion incorrecta. Cerrando comunicacion con el servidor.')
-    s.close()
-    exit()
-
-confirmacionArchivoElegido = receiveOneMessage(s)
-if(repr(confirmacionArchivoElegido) != repr(OK)):
-    print('Comando recibido: ', repr(confirmacionArchivoElegido))
-    print('Error. Cerrando la conexion con el servidor.')
-    s.close()
-    exit()
-
-print('Comando recibido: ', repr(confirmacionArchivoElegido))
-print('El servidor ha verificado el nombre del archivo.')
 print('Comenzando transferencia de datos...')
-
-with open(files[archivoElegido], 'wb') as f:
+digestGenerado = hashlib.md5()
+recibido = repr(receiveOneMessage(s))[2:-1]
+archivoElegido = recibido[recibido.rfind('/')+1:]
+with open(archivoElegido, 'wb') as f:
     while True:
         data = receiveOneMessage(s)
-        #print('data = ' + repr(data) + '\n\n')
         if repr(data) == repr(END_TRANSMISSION):
             fechaFinTransmision = str(datetime.datetime.now())
             sendOneMessage(s, fechaFinTransmision.encode())
             print('Fecha fin transmision archivo: ', fechaFinTransmision)
             f.close()
             print('Comando recibido: ', repr(END_TRANSMISSION))
-            print('Se ha terminado de escribir el archivo ' + files[archivoElegido])
+            print('Se ha terminado de escribir el archivo ' + archivoElegido)
             break
+        print('data = ' + repr(data) + '\n\n')
         f.write(data)
+        digestGenerado.update(data)
+        print(data)
 
+digestG = digestGenerado.hexdigest().encode()
+digestRecibido = receiveOneMessage(s)
 
-
-"""
-with open('recibido.txt', 'wb') as f:
-    while True:
-        print('Recibiendo los datos...')
-        data = s.recv(BUFFER_SIZE)
-        print('data=', repr(data))
-        if not data:
-            f.close()
-            print ('Archivo cerrado')
-            break
-        # write data to a file
-        f.write(data)
-
-print('Se ha recibido el archivo de manera exitosa.')
-s.close()
-print('Conexion cerrada.')
-"""
+if not compare_digest(digestG, digestRecibido):
+    sendOneMessage(s, ERR)
+    os.remove(archivoElegido)
+    print('Comando enviado: ', repr(ERR))
+    print('La integridad del archivo no pudo ser verificada. Finalizando conexion.')
+    s.close()
+    exit()
+sendOneMessage(s, OK)
+print('La integridad del archivo pudo ser verificada correctamente.')
+print('Comando enviado: ', repr(OK))
