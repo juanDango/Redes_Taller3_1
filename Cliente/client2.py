@@ -39,7 +39,6 @@ def receiveOneMessage(socket):
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-    print(TCP_IP)
     s.connect((TCP_IP, TCP_PORT))
     print('Se ha establecido una conexion exitosa con el servidor.')
 except:
