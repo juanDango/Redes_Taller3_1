@@ -8,7 +8,8 @@ import os
 from hmac import compare_digest
 import sys
 
-TCP_PORT = 9001
+TCP_IP = '172.31.31.23'
+TCP_PORT = 60001
 BUFFER_SIZE = 1024
 BEG_RECV = b'BEG_RECV'
 OK = b'OK'
@@ -37,7 +38,7 @@ def receiveOneMessage(socket):
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-    TCP_IP = socket.gethostname()
+    print(TCP_IP)
     s.connect((TCP_IP, TCP_PORT))
     print('Se ha establecido una conexion exitosa con el servidor.')
 except:

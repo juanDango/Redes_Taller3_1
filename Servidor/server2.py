@@ -5,7 +5,8 @@ from socketserver import ThreadingMixIn
 from ClientHandler import ClientHandler
 import datetime
 
-TCP_IP = socket.gethostbyaddr('192.168.100.189')[0]
+EC2_PUBLIC_IP = '172.31.31.23'
+TCP_IP = socket.gethostbyaddr(EC2_PUBLIC_IP)[0]
 TCP_PORT = 9001
 
 
