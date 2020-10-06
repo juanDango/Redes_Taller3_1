@@ -81,7 +81,7 @@ with open(archivoElegido, 'wb') as f:
         #print('data = ' + repr(data) + '\n\n')
         f.write(data)
         digestGenerado.update(data)
-        print(data)
+        #print(data)
         numPaquetesRecibidos += 1
         bytesRecibidos += sys.getsizeof(data)
 
