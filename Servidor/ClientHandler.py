@@ -12,6 +12,7 @@ BEG_RECV = b'BEG_RECV'
 OK = b'OK'
 ERR = b'ERR'
 END_TRANSMISSION = b'END_TRANSMISSION'
+FIN = b'FIN'
 
 class ClientHandler(Thread):
     def __init__(self, ip, port, sock, archivoElegido, log):
@@ -82,7 +83,6 @@ class ClientHandler(Thread):
         print("La duracion total de la transmision fue de: %f s" %(duracionTransmision.total_seconds())) 
         #Mandamos el digest
         digestE = digest.hexdigest().encode()
-        print(digestE)
         self.sendOneMessage(digestE)
         entregaExitosa = self.receiveOneMessage()
         numPaquetesRecibidos = repr(self.receiveOneMessage())[2:-1]
@@ -94,3 +94,8 @@ class ClientHandler(Thread):
         #Format: ip:puerto;entregaExitosa;duracion_transmision;numPaquetesEnviados;numPaquetesRecibidos;totalBytesEnviados;totalBytesRecibidos;
         self.log.write(self.ip + ':' + str(self.port) + ';' + repr(entregaExitosa)[2:-1] + ';' + str(duracionTransmision.total_seconds()) + ';' +  
         str(numPaquetesEnviados)+ ';' + numPaquetesRecibidos +  ';' + str(bytesEnviados) + ';' + bytesRecibidos +  ';\n')
+
+        print('Finalizando exitosamente la comunicacion con: ' + self.ip + ':' + str(self.port))
+        print('Enviando comando: ', repr(FIN))
+        self.sendOneMessage(FIN)
+        self.sock.close()
