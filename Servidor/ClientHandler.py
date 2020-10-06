@@ -66,7 +66,7 @@ class ClientHandler(Thread):
             l = f.read(BUFFER_SIZE)
             while (l):
                 self.sendOneMessage(l)
-                print('Se ha enviado: ', repr(l))
+                #print('Se ha enviado: ', repr(l))
                 digest.update(l)
                 bytesEnviados += sys.getsizeof(l)
                 l = f.read(BUFFER_SIZE)
