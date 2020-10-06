@@ -15,6 +15,7 @@ BEG_RECV = b'BEG_RECV'
 OK = b'OK'
 ERR = b'ERR'
 END_TRANSMISSION = b'END_TRANSMISSION'
+FIN = b'FIN'
 
 def sendOneMessage(socket, data):
     length = len(data)
@@ -102,4 +103,14 @@ print('Enviando bytes recibidos: ', str(bytesRecibidos))
 sendOneMessage(s, str(bytesRecibidos).encode())
 print('La integridad del archivo pudo ser verificada correctamente.')
 print('Comando enviado: ', repr(OK))
+
+fin = receiveOneMessage(s)
+if(repr(fin) != FIN):
+    print('Protocolo no exitoso. Cerrando conexion.')    
+    s.close()
+    exit()
+print('Comando recibido: ' + repr(FIN))
+print('Protocolo finalizado exitosamente. Gracias por conectarse al servidor.')
+s.close()
+exit()
 
