@@ -15,13 +15,14 @@ END_TRANSMISSION = b'END_TRANSMISSION'
 FIN = b'FIN'
 
 class ClientHandler(Thread):
-    def __init__(self, ip, port, sock, archivoElegido, log):
+    def __init__(self, ip, port, sock, archivoElegido, log, scanner):
         Thread.__init__(self)
         self.ip = ip
         self.port = port
         self.sock = sock
         self.archivoElegido = archivoElegido
         self.log = log
+        self.scanner = scanner
         print('Iniciando un nuevo thread para ' + str(ip) +':' + str(port))
 
     def sendOneMessage(self, data):
@@ -85,15 +86,17 @@ class ClientHandler(Thread):
         digestE = digest.hexdigest().encode()
         self.sendOneMessage(digestE)
         entregaExitosa = self.receiveOneMessage()
-        numPaquetesRecibidos = repr(self.receiveOneMessage())[2:-1]
-        bytesRecibidos = repr(self.receiveOneMessage())[2:-1]
+        #numPaquetesRecibidos = repr(self.receiveOneMessage())[2:-1]
+        #bytesRecibidos = repr(self.receiveOneMessage())[2:-1]
+        stats = self.scanner.endConnection(self.ip, self.port)
         print('Comando recibido: ', repr(entregaExitosa))
-        print('El cliente ' + self.ip + ':' + str(self.port) + ' recibio ' + numPaquetesRecibidos + ' paquetes')
-        print('Numero de bytes enviados: ', bytesEnviados)
-        print('El cliente ' + self.ip + ':' + str(self.port) + ' recibio ' + bytesRecibidos + ' bytes')
+        #print('El cliente ' + self.ip + ':' + str(self.port) + ' recibio ' + str() + ' paquetes')
+        print('Numero de bytes enviados: ', stats['bytes_sent'])
+        print('El cliente ' + self.ip + ':' + str(self.port) + ' recibio ' + str(stats['bytes_received']) + ' bytes')
+        #print(stats)
         #Format: ip:puerto;entregaExitosa;duracion_transmision;numPaquetesEnviados;numPaquetesRecibidos;totalBytesEnviados;totalBytesRecibidos;
         self.log.write(self.ip + ':' + str(self.port) + ';' + repr(entregaExitosa)[2:-1] + ';' + str(duracionTransmision.total_seconds()) + ';' +  
-        str(numPaquetesEnviados)+ ';' + numPaquetesRecibidos +  ';' + str(bytesEnviados) + ';' + bytesRecibidos +  ';\n')
+        str(stats['sent'])+ ';' + str(stats['received']) +  ';' + str(stats['retrans']) + ';' + str(stats['bytes_sent']) + ';' + str(stats['bytes_received']) +  ';\n')
 
         print('Finalizando exitosamente la comunicacion con: ' + self.ip + ':' + str(self.port))
         print('Enviando comando: ', repr(FIN))

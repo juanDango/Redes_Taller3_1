@@ -4,9 +4,11 @@ from threading import Thread
 from socketserver import ThreadingMixIn
 from ClientHandler import ClientHandler
 import datetime
+import tcp_monitor
 
 EC2_PUBLIC_IP = '54.91.103.85'
 TCP_IP = socket.gethostbyaddr(EC2_PUBLIC_IP)[0]
+#TCP_IP='192.168.1.12'
 TCP_PORT = 60001
 
 
@@ -16,6 +18,7 @@ tcpsock.bind((TCP_IP, TCP_PORT))
 threads = []
 
 path = './files/'
+log_path = './logs/'
 files = os.listdir(path)
 files.remove('.DS_Store')
 
@@ -35,11 +38,13 @@ except:
 
 archivoElegido = files[j]
 fechaPrueba = str(datetime.datetime.now())
-log = open(fechaPrueba + '.log', 'w')
+log = open(log_path + fechaPrueba + '.log', 'w')
 log.write('Fecha y Hora: ' + fechaPrueba + '\n')
 log.write('Nombre Archivo: ' + archivoElegido + '\n')
 log.write('Tamaño Archivo: ' + str(os.path.getsize(path + archivoElegido)) + '\n' )
 
+scanner = Thread(target=tcp_monitor.main2)
+scanner.start()
 
 for i in range(numClientes):
     #Socket que permite al servidor escuchar las peticiones de los clientes.
@@ -47,7 +52,8 @@ for i in range(numClientes):
     print('El servidor esta esperando conexiones...')
     (conn, (ip,port)) = tcpsock.accept()
     print('Se recibio una conexion de: ', (ip, port))
-    newthread = ClientHandler(ip, port, conn, path + archivoElegido, log)
+    tcp_monitor.addConnection(ip, port)
+    newthread = ClientHandler(ip, port, conn, path + archivoElegido, log, tcp_monitor)
     threads.append(newthread)   
 
 for t in threads:
