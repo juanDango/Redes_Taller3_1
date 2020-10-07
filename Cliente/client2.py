@@ -9,7 +9,7 @@ from hmac import compare_digest
 import sys
 
 TCP_IP = '54.91.103.85'
-TCP_IP = '192.168.1.12'
+#TCP_IP = '192.168.1.12'
 TCP_PORT = 60001
 BUFFER_SIZE = 1024
 BEG_RECV = b'BEG_RECV'
@@ -66,8 +66,8 @@ print('Comenzando transferencia de datos...')
 digestGenerado = hashlib.md5()
 recibido = repr(receiveOneMessage(s))[2:-1]
 archivoElegido = recibido[recibido.rfind('/')+1:]
-numPaquetesRecibidos = 0
-bytesRecibidos = 0
+# numPaquetesRecibidos = 0
+# bytesRecibidos = 0
 with open(archivoElegido, 'wb') as f:
     while True:
         data = receiveOneMessage(s)
@@ -83,8 +83,8 @@ with open(archivoElegido, 'wb') as f:
         f.write(data)
         digestGenerado.update(data)
         #print(data)
-        numPaquetesRecibidos += 1
-        bytesRecibidos += sys.getsizeof(data)
+        # numPaquetesRecibidos += 1
+        # bytesRecibidos += sys.getsizeof(data)
 
 digestG = digestGenerado.hexdigest().encode()
 digestRecibido = receiveOneMessage(s)
@@ -97,10 +97,10 @@ if not compare_digest(digestG, digestRecibido):
     s.close()
     exit()
 sendOneMessage(s, OK)
-print('Enviando numero de paqetes recibidos: ', str(numPaquetesRecibidos))
-sendOneMessage(s, str(numPaquetesRecibidos).encode())
-print('Enviando bytes recibidos: ', str(bytesRecibidos))
-sendOneMessage(s, str(bytesRecibidos).encode())
+# print('Enviando numero de paqetes recibidos: ', str(numPaquetesRecibidos))
+# sendOneMessage(s, str(numPaquetesRecibidos).encode())
+# print('Enviando bytes recibidos: ', str(bytesRecibidos))
+# sendOneMessage(s, str(bytesRecibidos).encode())
 print('La integridad del archivo pudo ser verificada correctamente.')
 print('Comando enviado: ', repr(OK))
 

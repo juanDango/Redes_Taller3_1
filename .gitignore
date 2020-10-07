@@ -1,7 +1,6 @@
-logs
 *.log
 files
-logs/
+logs/*
 files/
 *.pyc
 */__pycache__/

@@ -12,11 +12,11 @@ DATA_TAB_2 = '\t\t   '
 DATA_TAB_3 = '\t\t\t   '
 DATA_TAB_4 = '\t\t\t\t   '
 
-connections = {}
+connections = {'cent': True}
 
 def main2():
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
-    while True:
+    while connections['cent']:
         raw_data, addr = conn.recvfrom(65536)
         dest_mac, src_mac, eth_proto, data = ethernet_frame(raw_data)
         if eth_proto == 8:
@@ -26,12 +26,14 @@ def main2():
                 src_port, dest_port, sequence, acknowledgment = struct.unpack('! H H L L', data[:12])
                 if src_port == 60001 and (target, dest_port) in connections:
                     connections[(target, dest_port)]['sent'] += 1
+                    connections[(target, dest_port)]['bytes_sent'] += len(data)
                     if sequence != connections[(target, dest_port)]['current_SEQ']:
                         connections[(target, dest_port)]['current_SEQ'] = sequence
                         connections[(target, dest_port)]['received'] += 1
+                        connections[(target, dest_port)]['bytes_received'] += len(data)
                     else:
                         connections[(target, dest_port)]['retrans'] += 1
-                    print((target, dest_port), 'SEQ:', sequence, 'ACK:', acknowledgment)
+                    #print((target, dest_port), 'SEQ:', sequence, 'ACK:', acknowledgment)
 
 # Unpack Ethernet Frame
 def ethernet_frame(data):
@@ -97,13 +99,17 @@ def addConnection(addr, port):
         'received': 0,
         'retrans': 0,
         'current_SEQ': -1,
-        'size': 0
+        'bytes_sent': 0,
+        'bytes_received': 0
     }
-    print('ADDED', addr, port)
+    print('MONITORING ADDED', addr, port)
 
 def endConnection(addr, port):
     stats = connections.pop((addr, port), None)
-    print('ENDED', addr, port)
+    print('MONITORING ENDED', addr, port)
+    print(len(connections))
+    if len(connections) == 1:
+        connections['cent'] = False
     return stats
 
 #main2()

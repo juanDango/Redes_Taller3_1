@@ -8,7 +8,7 @@ import tcp_monitor
 
 EC2_PUBLIC_IP = '54.91.103.85'
 TCP_IP = socket.gethostbyaddr(EC2_PUBLIC_IP)[0]
-TCP_IP='192.168.1.12'
+#TCP_IP='192.168.1.12'
 TCP_PORT = 60001
 
 
