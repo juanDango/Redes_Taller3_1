@@ -16,6 +16,7 @@ BEG_RECV = b'BEG_RECV'
 OK = b'OK'
 ERR = b'ERR'
 END_TRANSMISSION = b'END_TRANSMISSION'
+FIN = b'FIN'
 
 def sendOneMessage(socket, data):
     length = len(data)
@@ -39,7 +40,6 @@ def receiveOneMessage(socket):
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-    print(TCP_IP)
     s.connect((TCP_IP, TCP_PORT))
     print('Se ha establecido una conexion exitosa con el servidor.')
 except:
@@ -79,10 +79,10 @@ with open(archivoElegido, 'wb') as f:
             print('Comando recibido: ', repr(END_TRANSMISSION))
             print('Se ha terminado de escribir el archivo ' + archivoElegido)
             break
-        print('data = ' + repr(data) + '\n\n')
+        #print('data = ' + repr(data) + '\n\n')
         f.write(data)
         digestGenerado.update(data)
-        print(data)
+        #print(data)
         numPaquetesRecibidos += 1
         bytesRecibidos += sys.getsizeof(data)
 
@@ -103,4 +103,14 @@ print('Enviando bytes recibidos: ', str(bytesRecibidos))
 sendOneMessage(s, str(bytesRecibidos).encode())
 print('La integridad del archivo pudo ser verificada correctamente.')
 print('Comando enviado: ', repr(OK))
+
+fin = receiveOneMessage(s)
+if(repr(fin) != repr(FIN)):
+    print('Protocolo no exitoso. Cerrando conexion.')    
+    s.close()
+    exit()
+print('Comando recibido: ' + repr(FIN))
+print('Protocolo finalizado exitosamente. Gracias por conectarse al servidor.')
+s.close()
+exit()
 
